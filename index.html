@@ -206,8 +206,8 @@ function fromRec(r){const m=grist.mapColumnNames(r);if(!m)return null;let ct=[];
  return{id:r.id,title:m.Titre||"",theme:m.Theme||"Autre",status:Object.keys(ST).find(k=>ST[k]===m.Statut)||"todo",imp:+!!m.Important,urg:+!!m.Urgent,
  people:(m.Personnes||"").split(",").map(s=>s.trim()).filter(Boolean),due:typeof m.Echeance==="number"?new Date(m.Echeance*1000).toISOString().slice(0,10):"",
  dur:m.Duree||"",progress:+m.Avancement||0,notes:m.Remarques||"",contacts:ct}}
-function toFields(t){return grist.mapColumnNamesBack({Titre:t.title,Theme:t.theme,Statut:ST[t.status],Important:!!t.imp,Urgent:!!t.urg,Personnes:(t.people||[]).join(", "),
- Echeance:t.due?Date.parse(t.due+"T00:00:00Z")/1000:null,Duree:t.dur,Avancement:t.progress,Remarques:t.notes,Contacts:JSON.stringify(t.contacts||[])})}
+function toFields(t){const f=grist.mapColumnNamesBack({Titre:t.title,Theme:t.theme,Statut:ST[t.status],Important:!!t.imp,Urgent:!!t.urg,Personnes:(t.people||[]).join(", "),
+ Echeance:t.due?Date.parse(t.due+"T00:00:00Z")/1000:null,Duree:t.dur,Avancement:t.progress,Remarques:t.notes,Contacts:JSON.stringify(t.contacts||[])});delete f.id;return f}
 async function persist(t){
  if(G){try{if(typeof t.id==="number")await grist.selectedTable.update({id:t.id,fields:toFields(t)});else await grist.selectedTable.create({fields:toFields(t)})}catch(e){alert("Erreur d'enregistrement Grist : "+e.message)}render();return}
  const i=tasks.findIndex(x=>x.id===t.id);if(i>=0)tasks[i]=t;else tasks.push(t);save();render()}
