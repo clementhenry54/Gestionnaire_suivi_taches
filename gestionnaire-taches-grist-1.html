@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gestionnaire de tâches</title>
+<style>
+:root{--bg:#f2f5fa;--card:#fff;--tx:#1b2547;--mu:#6b7794;--bd:#e1e7f1;--pr:#0f766e;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+header{background:linear-gradient(110deg,#1b2547,#0f766e);color:#fff;padding:14px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+header h1{font-size:19px;margin:0;flex:1;min-width:180px}
+button,select,input,textarea{font:inherit;color:inherit}
+.btn{border:0;border-radius:8px;padding:8px 14px;cursor:pointer;background:#fff;color:var(--tx);font-weight:600}
+.btn.pr{background:#f59e0b;color:#1b2547}.btn.gh{background:rgba(255,255,255,.15);color:#fff}
+.btn.sm{padding:4px 9px;font-size:12px;background:var(--bg)}
+.btn:focus-visible,.tab:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+nav{display:flex;gap:6px;padding:10px 20px 0;flex-wrap:wrap}
+.tab{border:0;background:transparent;padding:9px 14px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:600;color:var(--mu)}
+.tab.on{background:var(--card);color:var(--pr);box-shadow:0 -2px 0 var(--pr) inset}
+main{background:var(--card);margin:0 20px 20px;border-radius:0 var(--r) var(--r) var(--r);padding:16px;min-height:60vh;border:1px solid var(--bd)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.bar input,.bar select{border:1px solid var(--bd);border-radius:8px;padding:7px 10px;background:#fff}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{background:var(--bg);border-radius:20px;padding:4px 12px;font-weight:600;font-size:13px}
+.chip b{color:var(--pr)}.chip.red b{color:#dc2626}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.task{display:grid;grid-template-columns:6px 1fr auto;gap:12px;border:1px solid var(--bd);border-radius:var(--r);margin-bottom:10px;overflow:hidden;background:#fff;cursor:pointer}
+.task:hover{box-shadow:0 3px 12px rgba(27,37,71,.1)}
+.task .st{background:var(--c)}
+.task .bd{padding:10px 0}.task .rt{padding:10px 14px;text-align:right;min-width:120px}
+.task h3{margin:0 0 4px;font-size:15px}.task.done h3{text-decoration:line-through;color:var(--mu)}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--mu)}
+.tag{background:var(--bg);border-radius:6px;padding:2px 8px;color:var(--tx)}
+.tag.th{background:var(--c);color:#fff}.tag.late{background:#fee2e2;color:#b91c1c;font-weight:600}
+.prog{height:6px;background:var(--bd);border-radius:6px;overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;background:var(--c)}
+.eis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.q{border:2px dashed var(--bd);border-radius:var(--r);padding:10px;min-height:200px}
+.q.over{background:#f0fdfa;border-color:var(--pr)}
+.q h4{margin:0 0 8px}.q small{color:var(--mu);font-weight:400}
+.q .task{grid-template-columns:5px 1fr;cursor:grab}.q .task .rt{display:none}.q .task .bd{padding:8px 10px 8px 0}
+.q1{background:#fef2f2}.q2{background:#eff6ff}.q3{background:#fffbeb}.q4{background:#f8fafc}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .h{font-weight:700;text-align:center;color:var(--mu);font-size:12px}
+.day{border:1px solid var(--bd);border-radius:8px;min-height:90px;padding:4px;overflow:hidden;background:#fff}
+.day.out{background:var(--bg);opacity:.6}.day.today{border:2px solid var(--pr)}
+.day .n{font-size:12px;font-weight:700;color:var(--mu)}
+.pill{display:block;background:var(--c);color:#fff;border-radius:5px;padding:1px 6px;margin-top:3px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.week .day{min-height:260px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.card{border:1px solid var(--bd);border-radius:var(--r);padding:14px}
+.card h4{margin:0 0 10px}
+.brow{display:grid;grid-template-columns:100px 1fr 28px;gap:8px;align-items:center;margin:6px 0;font-size:12px}
+.brow .t{height:10px;background:var(--bd);border-radius:6px;overflow:hidden}.brow .t i{display:block;height:100%;background:var(--c)}
+dialog{border:0;border-radius:16px;padding:0;width:min(640px,94vw);max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(27,37,71,.5)}
+.fm{padding:18px;display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.fm .f{grid-column:1/-1}.fm label{display:block;font-weight:600;font-size:12px;color:var(--mu);margin-bottom:3px}
+.fm input,.fm select,.fm textarea{width:100%;border:1px solid var(--bd);border-radius:8px;padding:7px 9px;background:#fff}
+.fm input[type=range]{padding:0;accent-color:var(--pr)}
+.fm input[type=checkbox]{width:auto}
+.sw{display:flex;gap:14px}
+.ct{border-left:3px solid var(--pr);padding:4px 10px;margin:6px 0;background:var(--bg);border-radius:0 8px 8px 0;font-size:13px;display:flex;justify-content:space-between;gap:8px}
+.empty{text-align:center;color:var(--mu);padding:40px 10px}
+@media(max-width:640px){.fm{grid-template-columns:1fr}.task{grid-template-columns:6px 1fr}.task .rt{display:none}.eis{grid-template-columns:1fr}.day{min-height:60px}}
+@media(prefers-reduced-motion:no-preference){.task{transition:box-shadow .2s}}
+</style></head><body>
+<header><h1>Pilotage des projets numériques éducatifs</h1>
+<button class="btn gh" id="exp">Exporter</button><button class="btn gh" id="imp">Importer</button>
+<button class="btn pr" id="add">+ Nouvelle tâche</button><input type="file" id="file" accept=".json" hidden></header>
+<nav id="tabs"></nav><main id="main"></main>
+<dialog id="dlg"><form class="fm" id="fm" method="dialog"></form></dialog>
+<script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+<script>
+const THEMES={"Horizon28":"#0f766e","ADN":"#7c3aed","Pilotage":"#2563eb","Formation":"#f59e0b","Communication":"#db2777","Autre":"#64748b"};
+const ST={todo:"À faire",doing:"En cours",done:"Terminée"};
+const TABS=[["list","Liste"],["eis","Priorisation"],["week","Semaine"],["month","Mois"],["stats","Suivi"]];
+const KEY="gestionnaire_taches_v1";
+let tasks=[],view="list",cur=new Date(),fT="",fS="",q="",editId=null,draft=null;
+try{tasks=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){tasks=[]}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(tasks))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const today=()=>iso(new Date());
+const col=t=>THEMES[t.theme]||"#64748b";
+const late=t=>t.due&&t.due<today()&&t.status!=="done";
+const fmt=d=>d?new Date(d+"T00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}):"";
+const fmtDT=s=>s?new Date(s).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+const nowLocal=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)};
+function filtered(){return tasks.filter(t=>(!fT||t.theme===fT)&&(!fS||t.status===fS)&&(!q||(t.title+" "+(t.people||[]).join(" ")+" "+(t.notes||"")).toLowerCase().includes(q.toLowerCase())))}
+function taskCard(t,drag){
+ const lt=late(t);
+ return `<div class="task ${t.status==="done"?"done":""}" style="--c:${col(t)}" data-id="${t.id}" ${drag?'draggable="true"':""}>
+ <div class="st"></div><div class="bd"><h3>${esc(t.title)}</h3><div class="meta">
+ <span class="tag th">${esc(t.theme)}</span><span class="tag">${ST[t.status]}</span>
+ ${t.due?`<span class="tag ${lt?"late":""}">${lt?"En retard · ":""}${fmt(t.due)}</span>`:""}
+ ${t.dur?`<span class="tag">${esc(t.dur)}</span>`:""}
+ ${(t.people||[]).map(p=>`<span class="tag">${esc(p)}</span>`).join("")}
+ ${(t.contacts||[]).length?`<span class="tag">${t.contacts.length} contact(s)</span>`:""}</div>
+ <div class="prog"><i style="width:${t.progress||0}%"></i></div></div>
+ <div class="rt"><b>${t.progress||0}%</b><div class="meta" style="justify-content:flex-end">${t.imp?"Important":""} ${t.urg?"Urgent":""}</div></div></div>`}
+function render(){
+ $("#tabs").innerHTML=TABS.map(([k,l])=>`<button class="tab ${view===k?"on":""}" data-v="${k}">${l}</button>`).join("");
+ const m=$("#main");
+ const filt=`<div class="bar"><input id="q" placeholder="Rechercher…" value="${esc(q)}">
+ <select id="fT"><option value="">Tous les thèmes</option>${Object.keys(THEMES).map(k=>`<option ${fT===k?"selected":""}>${k}</option>`).join("")}</select>
+ <select id="fS"><option value="">Tous les statuts</option>${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${fS===k?"selected":""}>${v}</option>`).join("")}</select></div>`;
+ if(view==="list"){
+  const L=filtered().sort((a,b)=>(a.status==="done")-(b.status==="done")||(a.due||"9").localeCompare(b.due||"9"));
+  const open=tasks.filter(t=>t.status!=="done");
+  m.innerHTML=filt+`<div class="chips"><span class="chip"><b>${open.length}</b> à traiter</span><span class="chip red"><b>${tasks.filter(late).length}</b> en retard</span><span class="chip"><b>${tasks.filter(t=>t.status==="done").length}</b> terminées</span></div>`+(L.length?L.map(t=>taskCard(t)).join(""):`<div class="empty">Aucune tâche. Cliquez sur « Nouvelle tâche » pour commencer.</div>`);
+ }else if(view==="eis"){
+  const Q=[["q1","Urgent et important","À faire tout de suite",1,1],["q2","Important, pas urgent","À planifier",1,0],["q3","Urgent, pas important","À déléguer",0,1],["q4","Ni urgent ni important","À éliminer ou différer",0,0]];
+  const L=filtered().filter(t=>t.status!=="done");
+  m.innerHTML=filt+`<div class="eis">`+Q.map(([c,h,s,i,u])=>`<div class="q ${c}" data-i="${i}" data-u="${u}"><h4>${h} <small>${s}</small></h4>${L.filter(t=>!!t.imp===!!i&&!!t.urg===!!u).map(t=>taskCard(t,1)).join("")}</div>`).join("")+`</div><p class="meta">Glissez une tâche d'un cadran à l'autre pour changer sa priorité.</p>`;
+ }else if(view==="week"||view==="month"){cal(m,filt)}
+ else stats(m);
+ bind();
+}
+function cal(m,filt){
+ const wk=view==="week",d=new Date(cur);
+ let start,n;
+ if(wk){const w=(d.getDay()+6)%7;start=new Date(d);start.setDate(d.getDate()-w);n=7}
+ else{const f=new Date(d.getFullYear(),d.getMonth(),1);const w=(f.getDay()+6)%7;start=new Date(f);start.setDate(1-w);n=Math.ceil((w+new Date(d.getFullYear(),d.getMonth()+1,0).getDate())/7)*7}
+ const L=filtered();
+ const title=wk?"Semaine du "+start.toLocaleDateString("fr-FR",{day:"numeric",month:"long"}):d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+ let cells="";
+ for(let i=0;i<n;i++){const x=new Date(start);x.setDate(start.getDate()+i);const k=iso(x);
+  cells+=`<div class="day ${!wk&&x.getMonth()!==d.getMonth()?"out":""} ${k===today()?"today":""}"><span class="n">${x.getDate()}</span>${L.filter(t=>t.due===k).map(t=>`<span class="pill" style="--c:${col(t)}" data-id="${t.id}" title="${esc(t.title)}">${esc(t.title)}</span>`).join("")}</div>`}
+ m.innerHTML=filt+`<div class="bar"><button class="btn sm" data-n="-1">‹ Précédent</button><button class="btn sm" data-n="0">Aujourd'hui</button><button class="btn sm" data-n="1">Suivant ›</button><b style="text-transform:capitalize">${title}</b></div>
+ <div class="cal ${wk?"week":""}">${["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"].map(x=>`<div class="h">${x}</div>`).join("")}${cells}</div>
+ <p class="meta">${L.filter(t=>!t.due).length} tâche(s) sans échéance ne figurent pas dans l'agenda.</p>`;
+}
+function stats(m){
+ const T=tasks,tot=T.length||1,done=T.filter(t=>t.status==="done").length,doing=T.filter(t=>t.status==="doing").length,todo=T.length-done-doing;
+ const avg=Math.round(T.reduce((a,t)=>a+(t.progress||0),0)/tot);
+ const wkAgo=Date.now()-7*864e5;
+ const nc=T.reduce((a,t)=>a+(t.contacts||[]).filter(c=>new Date(c.dt).getTime()>wkAgo).length,0);
+ const R=42,C=2*Math.PI*R;let off=0;
+ const seg=[[done,"#16a34a"],[doing,"#f59e0b"],[todo,"#cbd5e1"]].map(([v,c])=>{const l=v/tot*C;const s=`<circle r="${R}" cx="60" cy="60" fill="none" stroke="${c}" stroke-width="16" stroke-dasharray="${l} ${C-l}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=l;return s}).join("");
+ const byT=Object.keys(THEMES).map(k=>[k,T.filter(t=>t.theme===k).length]).filter(x=>x[1]);
+ const mx=Math.max(1,...byT.map(x=>x[1]));
+ const ppl={};T.filter(t=>t.status!=="done").forEach(t=>(t.people||[]).forEach(p=>ppl[p]=(ppl[p]||0)+1));
+ const pl=Object.entries(ppl).sort((a,b)=>b[1]-a[1]).slice(0,5);
+ m.innerHTML=`<div class="grid">
+ <div class="card"><h4>Avancement global</h4><div style="display:flex;align-items:center;gap:14px"><svg width="120" height="120" viewBox="0 0 120 120">${seg}<text x="60" y="66" text-anchor="middle" font-size="22" font-weight="700" fill="#1b2547">${avg}%</text></svg>
+ <div class="meta" style="flex-direction:column;align-items:flex-start;font-size:13px"><span><i class="dot" style="background:#16a34a"></i>${done} terminées</span><span><i class="dot" style="background:#f59e0b"></i>${doing} en cours</span><span><i class="dot" style="background:#cbd5e1"></i>${todo} à faire</span></div></div></div>
+ <div class="card"><h4>Tâches par thème</h4>${byT.length?byT.map(([k,v])=>`<div class="brow" style="--c:${THEMES[k]}"><span>${k}</span><div class="t"><i style="width:${v/mx*100}%"></i></div><b>${v}</b></div>`).join(""):'<div class="meta">Aucune donnée.</div>'}</div>
+ <div class="card"><h4>Points de vigilance</h4><div class="chips"><span class="chip red"><b>${T.filter(late).length}</b> en retard</span><span class="chip"><b>${T.filter(t=>t.status!=="done"&&t.imp&&t.urg).length}</b> urgentes et importantes</span><span class="chip"><b>${nc}</b> contact(s) sur 7 jours</span></div></div>
+ <div class="card"><h4>Personnes les plus sollicitées</h4>${pl.length?pl.map(([p,v])=>`<div class="brow" style="--c:#0f766e"><span>${esc(p)}</span><div class="t"><i style="width:${v/pl[0][1]*100}%"></i></div><b>${v}</b></div>`).join(""):'<div class="meta">Aucune donnée.</div>'}</div></div>`;
+}
+function bind(){
+ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{view=b.dataset.v;render()});
+ const f=(id,fn)=>{const e=$(id);if(e)e.onchange=fn};
+ f("#fT",e=>{fT=e.target.value;render()});f("#fS",e=>{fS=e.target.value;render()});
+ const qe=$("#q");if(qe)qe.onchange=e=>{q=e.target.value;render()};
+ document.querySelectorAll("[data-id]").forEach(e=>e.onclick=()=>openForm(e.dataset.id));
+ document.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>{const n=+b.dataset.n;if(!n)cur=new Date();else if(view==="week")cur.setDate(cur.getDate()+7*n);else cur.setMonth(cur.getMonth()+n);render()});
+ let dragId=null;
+ document.querySelectorAll('.task[draggable]').forEach(e=>e.ondragstart=ev=>{dragId=e.dataset.id;ev.dataTransfer.setData("text/plain",dragId)});
+ document.querySelectorAll(".q").forEach(z=>{
+  z.ondragover=ev=>{ev.preventDefault();z.classList.add("over")};z.ondragleave=()=>z.classList.remove("over");
+  z.ondrop=ev=>{ev.preventDefault();const t=tasks.find(x=>String(x.id)===(dragId||ev.dataTransfer.getData("text/plain")));if(t){t.imp=+z.dataset.i;t.urg=+z.dataset.u;persist(t)}}});
+}
+function openForm(id){
+ editId=id||null;
+ const found=id?tasks.find(x=>String(x.id)===String(id)):null;
+ const t=found?JSON.parse(JSON.stringify(found)):{id:"t"+Date.now(),title:"",theme:"Horizon28",status:"todo",imp:0,urg:0,people:[],due:"",dur:"",progress:0,notes:"",contacts:[]};
+ if(found)editId=found.id;
+ draft=t;drawForm();$("#dlg").showModal();
+}
+function drawForm(){
+ const t=draft;
+ $("#fm").innerHTML=`<div class="f"><label>Tâche</label><input id="f_title" required value="${esc(t.title)}"></div>
+ <div><label>Thème</label><select id="f_theme">${Object.keys(THEMES).map(k=>`<option ${t.theme===k?"selected":""}>${k}</option>`).join("")}</select></div>
+ <div><label>Statut</label><select id="f_status">${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${t.status===k?"selected":""}>${v}</option>`).join("")}</select></div>
+ <div><label>Date limite</label><input type="date" id="f_due" value="${t.due||""}"></div>
+ <div><label>Durée ou délai</label><input id="f_dur" placeholder="ex. 2 h, 3 semaines" value="${esc(t.dur)}"></div>
+ <div class="f sw"><label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="f_imp" ${t.imp?"checked":""}>Important</label><label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="f_urg" ${t.urg?"checked":""}>Urgent</label></div>
+ <div class="f"><label>Avancement : <b id="pv">${t.progress}%</b></label><input type="range" id="f_prog" min="0" max="100" step="5" value="${t.progress}"></div>
+ <div class="f"><label>Personnes impliquées (séparées par des virgules)</label><input id="f_people" value="${esc((t.people||[]).join(", "))}"></div>
+ <div class="f"><label>Remarques</label><textarea id="f_notes" rows="3">${esc(t.notes)}</textarea></div>
+ <div class="f"><label>Journal des contacts</label>
+ ${(t.contacts||[]).map((c,i)=>`<div class="ct"><span><b>${esc(c.type)}</b> · ${fmtDT(c.dt)}${c.who?" · "+esc(c.who):""}<br>${esc(c.note)}</span><button type="button" class="btn sm" data-del="${i}">Retirer</button></div>`).join("")}
+ <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:6px;margin-top:6px">
+ <select id="c_type"><option>Mail</option><option>Téléphone</option><option>Visio</option><option>Réunion</option><option>Message</option></select>
+ <input type="datetime-local" id="c_dt" value="${nowLocal()}">
+ <input id="c_who" placeholder="Avec qui ?"><input id="c_note" placeholder="Objet ou résumé">
+ <button type="button" class="btn sm" id="c_add" style="grid-column:1/-1">Ajouter ce contact</button></div></div>
+ <div class="f" style="display:flex;gap:8px;justify-content:space-between"><span>${editId?'<button type="button" class="btn sm" id="del" style="color:#b91c1c">Supprimer la tâche</button>':""}</span><span><button type="button" class="btn sm" id="cancel">Annuler</button> <button type="submit" class="btn pr" id="ok">Enregistrer</button></span></div>`;
+ const sync=()=>{Object.assign(draft,{title:$("#f_title").value,theme:$("#f_theme").value,status:$("#f_status").value,due:$("#f_due").value,dur:$("#f_dur").value,imp:+$("#f_imp").checked,urg:+$("#f_urg").checked,progress:+$("#f_prog").value,people:$("#f_people").value.split(",").map(s=>s.trim()).filter(Boolean),notes:$("#f_notes").value})};
+ $("#f_prog").oninput=e=>$("#pv").textContent=e.target.value+"%";
+ $("#f_status").onchange=()=>{if($("#f_status").value==="done"){$("#f_prog").value=100;$("#pv").textContent="100%"}};
+ $("#c_add").onclick=()=>{sync();const n=$("#c_note").value.trim(),w=$("#c_who").value.trim();if(!n&&!w)return;draft.contacts.push({type:$("#c_type").value,dt:$("#c_dt").value,who:w,note:n});drawForm()};
+ document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{sync();draft.contacts.splice(+b.dataset.del,1);drawForm()});
+ $("#cancel").onclick=()=>$("#dlg").close();
+ const d=$("#del");if(d)d.onclick=()=>{if(confirm("Supprimer cette tâche ?")){$("#dlg").close();removeTask(editId)}};
+ $("#fm").onsubmit=async e=>{e.preventDefault();sync();if(!draft.title.trim())return;$("#dlg").close();await persist(draft)};
+}
+$("#add").onclick=()=>openForm();
+$("#exp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(tasks,null,1)],{type:"application/json"}));a.download="taches-"+today()+".json";a.click()};
+$("#imp").onclick=()=>$("#file").click();
+$("#file").onchange=e=>{const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(Array.isArray(x)){tasks=x;save();render()}}catch(err){alert("Fichier non valide.")}};r.readAsText(e.target.files[0])};
+const G=typeof grist!=="undefined";
+function fromRec(r){const m=grist.mapColumnNames(r);if(!m)return null;let ct=[];try{ct=JSON.parse(m.Contacts||"[]")}catch(e){}
+ return{id:r.id,title:m.Titre||"",theme:m.Theme||"Autre",status:Object.keys(ST).find(k=>ST[k]===m.Statut)||"todo",imp:+!!m.Important,urg:+!!m.Urgent,
+ people:(m.Personnes||"").split(",").map(s=>s.trim()).filter(Boolean),due:typeof m.Echeance==="number"?new Date(m.Echeance*1000).toISOString().slice(0,10):"",
+ dur:m.Duree||"",progress:+m.Avancement||0,notes:m.Remarques||"",contacts:ct}}
+function toFields(t){return grist.mapColumnNamesBack({Titre:t.title,Theme:t.theme,Statut:ST[t.status],Important:!!t.imp,Urgent:!!t.urg,Personnes:(t.people||[]).join(", "),
+ Echeance:t.due?Date.parse(t.due+"T00:00:00Z")/1000:null,Duree:t.dur,Avancement:t.progress,Remarques:t.notes,Contacts:JSON.stringify(t.contacts||[])})}
+async function persist(t){
+ if(G){try{if(typeof t.id==="number")await grist.selectedTable.update({id:t.id,fields:toFields(t)});else await grist.selectedTable.create({fields:toFields(t)})}catch(e){alert("Erreur d'enregistrement Grist : "+e.message)}render();return}
+ const i=tasks.findIndex(x=>x.id===t.id);if(i>=0)tasks[i]=t;else tasks.push(t);save();render()}
+async function removeTask(id){
+ if(G){try{await grist.selectedTable.destroy(id)}catch(e){alert("Erreur Grist : "+e.message)}return}
+ tasks=tasks.filter(x=>x.id!==id);save();render()}
+if(G){
+ $("#imp").style.display="none";
+ grist.ready({requiredAccess:"full",columns:[
+  {name:"Titre",title:"Titre de la tâche",type:"Text"},
+  {name:"Theme",title:"Thème",type:"Text",optional:true},
+  {name:"Statut",title:"Statut",type:"Text",optional:true},
+  {name:"Important",title:"Important",type:"Bool",optional:true},
+  {name:"Urgent",title:"Urgent",type:"Bool",optional:true},
+  {name:"Personnes",title:"Personnes impliquées",type:"Text",optional:true},
+  {name:"Echeance",title:"Date limite",type:"Date",optional:true},
+  {name:"Duree",title:"Durée ou délai",type:"Text",optional:true},
+  {name:"Avancement",title:"Avancement (0-100)",type:"Numeric",optional:true},
+  {name:"Remarques",title:"Remarques",type:"Text",optional:true},
+  {name:"Contacts",title:"Journal des contacts",type:"Text",optional:true}]});
+ grist.onRecords(recs=>{tasks=recs.map(fromRec).filter(Boolean);render()});
+}
+render();
+</script></body></html>
